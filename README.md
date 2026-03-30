@@ -40,6 +40,12 @@ The project is structured in two stages:
 - Build similarity-based and collaborative recommendation approaches
 - Combine insights into a hybrid recommender system
 
+## 🚀 Goals
+
+- Build a clear understanding of what makes games successful
+- Develop a recommendation system grounded in both data and behaviour
+- Demonstrate end-to-end ML thinking: EDA → modelling → system design → product application
+
 ## 📦 Data
 
 The dataset is based on BoardGameGeek and includes:
@@ -71,12 +77,6 @@ project/
 - The raw_data/ folder is ignored by Git to avoid committing large files
 - Only a placeholder (.gitkeep) is tracked to preserve structure
 - If you'd like to run this project locally, ensure all required data files are placed in raw_data/
-
-## 🚀 Goals
-
-- Build a clear understanding of what makes games successful
-- Develop a recommendation system grounded in both data and behaviour
-- Demonstrate end-to-end ML thinking: EDA → modelling → system design → product application
 
 ## 🛠️ Tech stack
 
