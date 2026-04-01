@@ -3,5 +3,9 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .DS_Store
-raw_data/*
-!raw_data/.gitkeep
+
+data/**
+!data/
+!data/raw/
+!data/processed/
+!data/**/.gitkeep
