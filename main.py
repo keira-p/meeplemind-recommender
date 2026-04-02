@@ -14,7 +14,12 @@ def load_data():
     item_similarity_df = pd.read_csv("data/processed/item_similarity.csv", index_col=0)
     games_df = pd.read_csv("data/processed/games.csv")
 
-    # helpful mappings
+    # Ensure all IDs are integer type
+    item_similarity_df.index = item_similarity_df.index.astype(int)
+    item_similarity_df.columns = item_similarity_df.columns.astype(int)
+    games_df["BGGId"] = games_df["BGGId"].astype(int)
+
+    # Name-ID mappings
     name_to_id = dict(zip(games_df["Name"], games_df["BGGId"]))
     id_to_name = dict(zip(games_df["BGGId"], games_df["Name"]))
 
@@ -48,13 +53,6 @@ def recommend_from_favourite_games(
         for name in favourite_game_names
         if name in name_to_id
     ]
-
-    print("\nDEBUG")
-    print("Favourite game names:", favourite_game_names)
-    print("Liked game IDs from name_to_id:", liked_game_ids)
-    print("Type of one liked ID:", type(liked_game_ids[0]) if liked_game_ids else None)
-    print("Type of similarity column label:", type(item_similarity_df.columns[0]))
-    print("First 5 similarity columns:", list(item_similarity_df.columns[:5]))
 
     # keep only games that exist in similarity matrix
     liked_game_ids = [
