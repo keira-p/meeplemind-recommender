@@ -5,7 +5,7 @@ from recommender import load_data, recommend_from_favourite_games
 st.set_page_config(page_title="MeepleMind", page_icon="🎲", layout="centered")
 
 # ----- Load data once -----
-@st.cache_data
+@st.cache_data(show_spinner="Loading game data...")
 def get_data():
     return load_data()
 
