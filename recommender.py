@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 
 def load_data():
@@ -47,60 +46,58 @@ def recommend_from_favourite_games(
     6. Return top recommendations with simple explanations
     """
 
-    # convert selected names to IDs
+    # Convert selected names to IDs
     liked_game_ids = [
         name_to_id[name]
         for name in favourite_game_names
         if name in name_to_id
     ]
 
-    # keep only games that exist in similarity matrix
+    # Keep only games that exist in similarity matrix
     liked_game_ids = [
         game_id
         for game_id in liked_game_ids
         if game_id in item_similarity_df.columns
     ]
 
-    # fail safely if no valid games found
+    # Fail safely if no valid games found
     if len(liked_game_ids) == 0:
         return pd.DataFrame(columns=["BGGId", "Name", "Score", "BecauseYouLiked"])
 
-    # store total recommendation scores
+    # Store total recommendation scores
     recommendation_scores = {}
 
-    # store explanation details
-    # e.g. {candidate_game_id: [(liked_game_id, similarity_score), ...]}
+    # Store explanation details
     recommendation_reasons = {}
 
-    # loop through each selected favourite game
     for liked_game_id in liked_game_ids:
 
-        # get similar games for this liked game
+        # Get similar games for this liked game
         similar_series = item_similarity_df[liked_game_id]
 
-        # remove self-match
+        # Remove self-match
         similar_series = similar_series.drop(liked_game_id, errors="ignore")
 
-        # keep strongest similar games only
+        # Keep strongest similar games only
         similar_series = similar_series.sort_values(ascending=False).head(top_k_similar)
 
-        # keep only games above similarity threshold
+        # Keep only games above similarity threshold
         similar_series = similar_series[similar_series >= similarity_threshold]
 
-        # loop through candidate games
+        # Loop through candidate games
         for candidate_game_id, similarity_score in similar_series.items():
 
-            # skip games user already selected
+            # Skip games user already selected
             if candidate_game_id in liked_game_ids:
                 continue
 
-            # add similarity score to total
+            # Add similarity score to total
             if candidate_game_id not in recommendation_scores:
                 recommendation_scores[candidate_game_id] = 0
 
             recommendation_scores[candidate_game_id] += similarity_score
 
-            # store explanation source
+            # Store explanation source
             if candidate_game_id not in recommendation_reasons:
                 recommendation_reasons[candidate_game_id] = []
 
@@ -108,36 +105,34 @@ def recommend_from_favourite_games(
                 (liked_game_id, similarity_score)
             )
 
-    # convert scores to dataframe
+    # Convert scores to dataframe
     recommendations_df = pd.DataFrame(
         list(recommendation_scores.items()),
         columns=["BGGId", "Score"]
     )
 
-    # fail safely if no recommendations found
+    # Fail safely if no recommendations found
     if recommendations_df.empty:
         return pd.DataFrame(columns=["BGGId", "Name", "Score", "BecauseYouLiked"])
 
-    # sort best to worst
+    # Sort and add names
     recommendations_df = recommendations_df.sort_values("Score", ascending=False)
-
-    # add game names
     recommendations_df["Name"] = recommendations_df["BGGId"].map(id_to_name)
 
-    # build readable explanation column
+    # Build readable explanation column
     because_you_liked = []
 
     for candidate_game_id in recommendations_df["BGGId"]:
 
         reasons = recommendation_reasons[candidate_game_id]
 
-        # strongest contributing input games first
+        # Strongest contributing input games first
         reasons = sorted(reasons, key=lambda x: x[1], reverse=True)
 
-        # keep top 3 reasons
+        # Keep top 3 reasons
         top_reasons = reasons[:3]
 
-        # convert IDs to names
+        # Convert IDs to names
         top_reason_names = [
             id_to_name.get(liked_game_id, str(liked_game_id))
             for liked_game_id, _ in top_reasons
@@ -147,7 +142,7 @@ def recommend_from_favourite_games(
 
     recommendations_df["BecauseYouLiked"] = because_you_liked
 
-    # drop any rows where name mapping failed
+    # Drop any rows where name mapping failed
     recommendations_df = recommendations_df.dropna(subset=["Name"])
 
     return recommendations_df[["BGGId", "Name", "Score", "BecauseYouLiked"]].head(top_n)
