@@ -6,28 +6,32 @@ def load_data():
     Loads precomputed data for recommender.
 
     Returns:
-    - similarity matrix (df)
+    - sparse KNN neighbours artefact (df)
     - simple games metadata (df)
     - game ID-name mapping tools
     """
-    item_similarity_df = pd.read_csv("data/processed/item_similarity.csv", index_col=0)
+    item_neighbours_df = pd.read_parquet("data/processed/item_neighbours.parquet")
     games_df = pd.read_csv("data/processed/games.csv")
 
-    # Ensure all IDs are integer type
-    item_similarity_df.index = item_similarity_df.index.astype(int)
-    item_similarity_df.columns = item_similarity_df.columns.astype(int)
+    # Ensure IDs are integer type
     games_df["BGGId"] = games_df["BGGId"].astype(int)
+
+    if "BGGId" in item_neighbours_df.columns:
+        item_neighbours_df["BGGId"] = item_neighbours_df["BGGId"].astype(int)
+
+    if "NeighbourId" in item_neighbours_df.columns:
+        item_neighbours_df["NeighbourId"] = item_neighbours_df["NeighbourId"].astype(int)
 
     # Name-ID mappings
     name_to_id = dict(zip(games_df["Name"], games_df["BGGId"]))
     id_to_name = dict(zip(games_df["BGGId"], games_df["Name"]))
 
-    return item_similarity_df, games_df, name_to_id, id_to_name
+    return item_neighbours_df, games_df, name_to_id, id_to_name
 
 
 def recommend_from_favourite_games(
     favourite_game_names,
-    item_similarity_df,
+    item_neighbours_df,
     name_to_id,
     id_to_name,
     similarity_threshold=0.25,
@@ -39,7 +43,7 @@ def recommend_from_favourite_games(
 
     Steps:
     1. Convert selected game names to BGGIds
-    2. For each liked game, find similar games
+    2. For each liked game, find similar games (precomputed neighbours)
     3. Keep only reasonably similar games
     4. Add up similarity scores across liked games
     5. Store which input games contributed to each recommendation
@@ -54,11 +58,14 @@ def recommend_from_favourite_games(
     ]
 
     # Keep only games that exist in similarity matrix
+    valid_source_ids = set(item_neighbours_df["BGGId"].unique())
+
     liked_game_ids = [
         game_id
         for game_id in liked_game_ids
-        if game_id in item_similarity_df.columns
+        if game_id in valid_source_ids
     ]
+
 
     # Fail safely if no valid games found
     if len(liked_game_ids) == 0:
@@ -72,20 +79,35 @@ def recommend_from_favourite_games(
 
     for liked_game_id in liked_game_ids:
 
-        # Get similar games for this liked game
-        similar_series = item_similarity_df[liked_game_id]
+        # Get neighbour rows for this liked game
+        neighbour_rows = item_neighbours_df[
+            item_neighbours_df["BGGId"] == liked_game_id
+        ].copy()
+
+        # Fail softly if no neighbours found
+        if neighbour_rows.empty:
+            continue
 
         # Remove self-match
-        similar_series = similar_series.drop(liked_game_id, errors="ignore")
+        neighbour_rows = neighbour_rows[
+            neighbour_rows["NeighbourId"] != liked_game_id
+        ]
 
         # Keep strongest similar games only
-        similar_series = similar_series.sort_values(ascending=False).head(top_k_similar)
+        neighbour_rows = neighbour_rows.sort_values(
+            "Similarity",
+            ascending=False
+        ).head(top_k_similar)
 
         # Keep only games above similarity threshold
-        similar_series = similar_series[similar_series >= similarity_threshold]
+        neighbour_rows = neighbour_rows[
+            neighbour_rows["Similarity"] >= similarity_threshold
+        ]
 
         # Loop through candidate games
-        for candidate_game_id, similarity_score in similar_series.items():
+        for _, row in neighbour_rows.iterrows():
+            candidate_game_id = row["NeighbourId"]
+            similarity_score = row["Similarity"]
 
             # Skip games user already selected
             if candidate_game_id in liked_game_ids:
@@ -154,7 +176,7 @@ if __name__ == "__main__":
     # Test loading data
     print("🔄 Loading data...")
 
-    item_similarity_df, games_df, name_to_id, id_to_name = load_data()
+    item_neighbours_df, games_df, name_to_id, id_to_name = load_data()
 
     print("✅ Data loaded")
 
@@ -169,7 +191,7 @@ if __name__ == "__main__":
 
     recommendations = recommend_from_favourite_games(
         favourite_game_names=test_games,
-        item_similarity_df=item_similarity_df,
+        item_neighbours_df=item_neighbours_df,
         name_to_id=name_to_id,
         id_to_name=id_to_name,
         similarity_threshold=0.25,

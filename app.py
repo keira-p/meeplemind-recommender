@@ -39,7 +39,7 @@ st.markdown("""
 def get_data():
     return load_data()
 
-item_similarity_df, games_df, name_to_id, id_to_name = get_data()
+item_neighbours_df, games_df, name_to_id, id_to_name = get_data()
 
 # ----- Popular fallback games -----
 popular_games = [
@@ -104,7 +104,7 @@ if st.button("Get recommendations", type="primary", disabled=not is_ready):
     with st.spinner("Finding recommendations..."):
         recommendations = recommend_from_favourite_games(
             favourite_game_names=selected_games,
-            item_similarity_df=item_similarity_df,
+            item_neighbours_df=item_neighbours_df,
             name_to_id=name_to_id,
             id_to_name=id_to_name,
             similarity_threshold=0.25,
@@ -116,7 +116,7 @@ if st.button("Get recommendations", type="primary", disabled=not is_ready):
         if recommendations.empty:
             recommendations = recommend_from_favourite_games(
                 favourite_game_names=selected_games,
-                item_similarity_df=item_similarity_df,
+                item_neighbours_df=item_neighbours_df,
                 name_to_id=name_to_id,
                 id_to_name=id_to_name,
                 similarity_threshold=0.15,
