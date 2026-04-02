@@ -19,8 +19,8 @@ def load_data():
     if "BGGId" in item_neighbours_df.columns:
         item_neighbours_df["BGGId"] = item_neighbours_df["BGGId"].astype(int)
 
-    if "NeighbourId" in item_neighbours_df.columns:
-        item_neighbours_df["NeighbourId"] = item_neighbours_df["NeighbourId"].astype(int)
+    if "SimilarBGGId" in item_neighbours_df.columns:
+        item_neighbours_df["SimilarBGGId"] = item_neighbours_df["SimilarBGGId"].astype(int)
 
     # Name-ID mappings
     name_to_id = dict(zip(games_df["Name"], games_df["BGGId"]))
@@ -90,24 +90,24 @@ def recommend_from_favourite_games(
 
         # Remove self-match
         neighbour_rows = neighbour_rows[
-            neighbour_rows["NeighbourId"] != liked_game_id
+            neighbour_rows["SimilarBGGId"] != liked_game_id
         ]
 
         # Keep strongest similar games only
         neighbour_rows = neighbour_rows.sort_values(
-            "Similarity",
+            "Score",
             ascending=False
         ).head(top_k_similar)
 
         # Keep only games above similarity threshold
         neighbour_rows = neighbour_rows[
-            neighbour_rows["Similarity"] >= similarity_threshold
+            neighbour_rows["Score"] >= similarity_threshold
         ]
 
         # Loop through candidate games
         for _, row in neighbour_rows.iterrows():
-            candidate_game_id = row["NeighbourId"]
-            similarity_score = row["Similarity"]
+            candidate_game_id = row["SimilarBGGId"]
+            similarity_score = row["Score"]
 
             # Skip games user already selected
             if candidate_game_id in liked_game_ids:

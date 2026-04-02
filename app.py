@@ -168,6 +168,24 @@ if st.button("Get recommendations", type="primary", disabled=not is_ready):
                 unsafe_allow_html=True
             )
 
+        # For low recommendations returned
+        if len(recommendations) < 5:
+            st.markdown(
+                """
+                <div style="
+                    background-color:#e8f0fe;
+                    padding:16px;
+                    border-radius:10px;
+                    margin-bottom:12px;
+                    color:#1f2a44;
+                ">
+                    Not many games match this combination, but the ones that do are strong picks. 💪<br><br>
+                    Try swapping or removing a game to see more variety.
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
         # Rest of results
         remaining_df = display_df.iloc[3:].copy()
 
