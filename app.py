@@ -97,7 +97,7 @@ selected_games = st.multiselect(
 
 st.markdown("<div style='margin-top: 10px'></div>", unsafe_allow_html=True)
 
-# ----- Recommendations -----
+# ----- Recommendation results -----
 is_ready = len(selected_games) >= 3
 
 if st.button("Get recommendations", type="primary", disabled=not is_ready):
@@ -141,14 +141,32 @@ if st.button("Get recommendations", type="primary", disabled=not is_ready):
         display_df = recommendations.copy()
         display_df["Match"] = display_df["Score"].apply(score_to_label)
 
-        # Top 3 callouts
+        display_df["BGG"] = display_df["BGGId"].apply(
+            lambda game_id: f"https://boardgamegeek.com/boardgame/{game_id}"
+        )
+
+        # Top 3
         top_3 = display_df.head(3).reset_index(drop=True)
 
         for i, row in top_3.iterrows():
-            if i == 0:
-                st.success(f"**#{i+1}: {row['Name']}** — {row['Match']}")
-            else:
-                st.info(f"**#{i+1}: {row['Name']}** — {row['Match']}")
+            label = row["Match"]
+
+            bg_color = "#e8f3e8" if i == 0 else "#eaf1fb"
+
+            st.markdown(
+                f"""
+        <div style="background-color:{bg_color}; padding:16px; border-radius:12px; margin-bottom:12px;">
+            <div style="font-weight:600;">
+                #{i+1}:
+                <a href="{row['BGG']}" target="_blank" style="text-decoration:none; color:inherit;">
+                    {row['Name']} ↗
+                </a>
+                — {label}
+            </div>
+        </div>
+        """,
+                unsafe_allow_html=True
+            )
 
         # Rest of results
         remaining_df = display_df.iloc[3:].copy()
