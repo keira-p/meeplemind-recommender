@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.git/
+.gitignore
+notebooks/
+.DS_Store
+.streamlit/secrets.toml
+
+# Ignore raw data
+data/raw/
+
+# Keep processed data ✅
