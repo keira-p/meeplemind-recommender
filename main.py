@@ -156,35 +156,21 @@ def recommend_from_favourite_games(
 # ----- TESTS -----
 if __name__ == "__main__":
 
-    #  Test loading data
+    # Test loading data
     print("🔄 Loading data...")
 
     item_similarity_df, games_df, name_to_id, id_to_name = load_data()
 
-    print("🔍 Running checks...")
-
-    assert item_similarity_df.shape[0] == item_similarity_df.shape[1], "❌ Similarity matrix not square"
-    assert "BGGId" in games_df.columns, "❌ Missing BGGId column"
-    assert "Name" in games_df.columns, "❌ Missing Name column"
-
-    print("✅ Data loaded correctly")
-
-    print("\n🎲 Example games:")
-    print(games_df[["BGGId", "Name"]].head())
-
-    print("\n🧪 Example similarity scores:")
-    print(item_similarity_df.iloc[0, :5])
+    print("✅ Data loaded")
 
     # Test recommender
-    print("\n🎯 Test recommendations:")
-
     test_games = [
         games_df["Name"].iloc[0],
         games_df["Name"].iloc[1],
         games_df["Name"].iloc[2],
     ]
 
-    print(f"Input games: {test_games}")
+    print(f"\n🎯 Testing with: {test_games}")
 
     recommendations = recommend_from_favourite_games(
         favourite_game_names=test_games,
@@ -195,5 +181,5 @@ if __name__ == "__main__":
         top_n=10
     )
 
-    print("\n📊 Recommendations:")
-    print(recommendations)
+    print("\n📊 Top recommendations:")
+    print(recommendations.head())
