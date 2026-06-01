@@ -4,7 +4,7 @@
 # 3. ✅ Recommender excludes source game itself
 # 4. ✅ Games below similarity threshold are excluded
 # 5. ✅ Recommender excludes all already-selected games
-# 6. Recommendations are sorted by score
+# 6. ✅ Recommendations are sorted by score
 # 7. BecauseYouLiked explanation is populated correctly
 # 8. Keep only top_k_similar neighbours
 
@@ -12,10 +12,30 @@
 
 
 import pandas as pd
+import pytest
 from recommender import recommend_from_favourite_games
 
 
-def test_recommender_single_game_excludes_selected_game():
+@pytest.fixture
+def game_mappings():
+    name_to_id = {
+        "Catan": 1,
+        "Ticket to Ride": 2,
+        "Pandemic": 3,
+        "Azul": 4,
+    }
+
+    id_to_name = {
+        1: "Catan",
+        2: "Ticket to Ride",
+        3: "Pandemic",
+        4: "Azul",
+    }
+
+    return name_to_id, id_to_name
+
+
+def test_recommender_single_game_excludes_selected_game(game_mappings):
     # Arrange
     item_neighbours_df = pd.DataFrame(
         {
@@ -25,17 +45,7 @@ def test_recommender_single_game_excludes_selected_game():
             }
         )
 
-    name_to_id = {
-        "Catan": 1,
-        "Ticket to Ride": 2,
-        "Pandemic": 3,
-        }
-
-    id_to_name = {
-        1: "Catan",
-        2: "Ticket to Ride",
-        3: "Pandemic",
-        }
+    name_to_id, id_to_name = game_mappings
 
     selected_games = "Catan"
     favourite_game_names = [selected_games]
@@ -56,7 +66,7 @@ def test_recommender_single_game_excludes_selected_game():
     assert selected_games not in recommended_names
 
 
-def test_recommender_multiple_game_excludes_all_selected_games():
+def test_recommender_multiple_game_excludes_all_selected_games(game_mappings):
     # Arrange
     item_neighbours_df = pd.DataFrame(
         {
@@ -66,19 +76,7 @@ def test_recommender_multiple_game_excludes_all_selected_games():
             }
         )
 
-    name_to_id = {
-        "Catan": 1,
-        "Ticket to Ride": 2,
-        "Pandemic": 3,
-        "Azul": 4
-        }
-
-    id_to_name = {
-        1: "Catan",
-        2: "Ticket to Ride",
-        3: "Pandemic",
-        4: "Azul"
-        }
+    name_to_id, id_to_name = game_mappings
 
     selected_games = ["Catan", "Pandemic"]
     favourite_game_names = selected_games
@@ -100,7 +98,7 @@ def test_recommender_multiple_game_excludes_all_selected_games():
         assert game not in recommended_names
 
 
-def test_recommender_exclude_games_below_similarity_threshold():
+def test_recommender_exclude_games_below_similarity_threshold(game_mappings):
     # Arrange
     item_neighbours_df = pd.DataFrame(
         {
@@ -110,17 +108,7 @@ def test_recommender_exclude_games_below_similarity_threshold():
             }
         )
 
-    name_to_id = {
-        "Catan": 1,
-        "Ticket to Ride": 2,
-        "Pandemic": 3,
-        }
-
-    id_to_name = {
-        1: "Catan",
-        2: "Ticket to Ride",
-        3: "Pandemic",
-        }
+    name_to_id, id_to_name = game_mappings
 
     # Act
     recommendations = recommend_from_favourite_games(
@@ -139,7 +127,7 @@ def test_recommender_exclude_games_below_similarity_threshold():
     assert "Pandemic" not in recommended_names
 
 
-def test_recommendations_sorted_by_score():
+def test_recommendations_sorted_by_score(game_mappings):
     #Arrange
     item_neighbours_df = pd.DataFrame(
         {
@@ -149,19 +137,7 @@ def test_recommendations_sorted_by_score():
             }
         )
 
-    name_to_id = {
-        "Catan": 1,
-        "Ticket to Ride": 2,
-        "Pandemic": 3,
-        "Azul": 4
-        }
-
-    id_to_name = {
-        1: "Catan",
-        2: "Ticket to Ride",
-        3: "Pandemic",
-        4: "Azul"
-        }
+    name_to_id, id_to_name = game_mappings
 
     selected_games = ["Catan", "Pandemic", "Pandemic"]
     favourite_game_names = selected_games
