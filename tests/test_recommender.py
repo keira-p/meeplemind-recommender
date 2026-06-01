@@ -2,10 +2,11 @@
 # 1. Unknown favourite game returns empty recommendations
 # 2. Invalid favourite game ID returns empty recommendations
 # 3. ✅ Recommender excludes source game itself
-# 4. Games below similarity threshold are excluded
+# 4. ✅ Games below similarity threshold are excluded
 # 5. ✅ Recommender excludes all already-selected games
 # 6. Recommendations are sorted by score
 # 7. BecauseYouLiked explanation is populated correctly
+# 8. Keep only top_k_similar neighbours
 
 # =====================================================================
 
@@ -136,3 +137,46 @@ def test_recommender_exclude_games_below_similarity_threshold():
     recommended_names = recommendations["Name"].values
     assert "Ticket to Ride" in recommended_names
     assert "Pandemic" not in recommended_names
+
+
+def test_recommendations_sorted_by_score():
+    #Arrange
+    item_neighbours_df = pd.DataFrame(
+        {
+            "BGGId":[1, 1, 1],
+            "SimilarBGGId":[2, 3, 4],
+            "Score":[0.7, 0.9, 0.8]
+            }
+        )
+
+    name_to_id = {
+        "Catan": 1,
+        "Ticket to Ride": 2,
+        "Pandemic": 3,
+        "Azul": 4
+        }
+
+    id_to_name = {
+        1: "Catan",
+        2: "Ticket to Ride",
+        3: "Pandemic",
+        4: "Azul"
+        }
+
+    selected_games = ["Catan", "Pandemic", "Pandemic"]
+    favourite_game_names = selected_games
+
+    #Act
+    recommendations = recommend_from_favourite_games(
+        favourite_game_names,
+        item_neighbours_df,
+        name_to_id,
+        id_to_name,
+        similarity_threshold=0.25,
+        top_n=20,
+        top_k_similar=50,
+        )
+
+    #Assert
+    recommended_list = list(recommendations["Name"].values)
+    assert recommended_list == ["Pandemic", "Azul", "Ticket to Ride"]
