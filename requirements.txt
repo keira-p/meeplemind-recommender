@@ -1,3 +1,4 @@
 pandas
 streamlit
 pyarrow
+pytest
