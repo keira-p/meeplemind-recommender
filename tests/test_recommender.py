@@ -5,7 +5,7 @@
 # 4. ✅ Games below similarity threshold are excluded
 # 5. ✅ Recommender excludes all already-selected games
 # 6. ✅ Recommendations are sorted by score
-# 7. BecauseYouLiked explanation is populated correctly
+# 7. ✅ BecauseYouLiked explanation is populated correctly
 # 8. Keep only top_k_similar neighbours
 
 # =====================================================================
@@ -156,3 +156,34 @@ def test_recommendations_sorted_by_score(game_mappings):
     #Assert
     recommended_list = list(recommendations["Name"].values)
     assert recommended_list == ["Pandemic", "Azul", "Ticket to Ride"]
+
+
+def test_because_you_liked_shows_selected_games(game_mappings):
+    #Arrange
+    item_neighbours_df = pd.DataFrame(
+        {
+            "BGGId":[1, 2],
+            "SimilarBGGId":[4, 4],
+            "Score":[0.7, 0.4]
+            }
+    )
+
+    name_to_id, id_to_name = game_mappings
+
+    favourite_game_names = ["Catan", "Ticket to Ride"]
+
+    #Act
+    recommendations = recommend_from_favourite_games(
+        favourite_game_names,
+        item_neighbours_df,
+        name_to_id,
+        id_to_name,
+        similarity_threshold=0.25,
+        top_n=20,
+        top_k_similar=50,
+        )
+
+    #Assert
+    azul_row = recommendations[recommendations["Name"] == "Azul"].iloc[0]
+
+    assert azul_row["BecauseYouLiked"] == "Catan, Ticket to Ride"
