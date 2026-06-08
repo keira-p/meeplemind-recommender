@@ -252,3 +252,50 @@ def test_empty_dataframe_if_no_recommendations(game_mappings):
 
     # Assert
     assert recommendations.empty
+
+
+# ===========================================
+# MOCKING
+
+from unittest.mock import patch
+from recommender import load_data
+
+def test_load_data_creates_game_mappings():
+
+    # Arrange
+    fake_games_df = pd.DataFrame(
+        {
+        "BGGId": [1, 2],
+        "Name": ["Catan", "Azul"],
+        }
+    )
+
+    fake_neighbours_df = pd.DataFrame(
+        {
+        "BGGId": [1],
+        "SimilarBGGId": [2],
+        "Score": [0.9],
+        }
+    )
+
+    # Act
+    with patch(
+        "recommender.pd.read_parquet",
+        return_value=fake_neighbours_df
+    ), patch(
+        "recommender.pd.read_csv",
+        return_value=fake_games_df
+    ):
+
+        item_neighbours_df, games_df, name_to_id, id_to_name = load_data()
+
+    # Assert
+    assert name_to_id == {
+        "Catan": 1,
+        "Azul": 2
+    }
+
+    assert id_to_name == {
+        1: "Catan",
+        2: "Azul"
+    }
