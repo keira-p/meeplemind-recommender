@@ -34,6 +34,21 @@ def game_mappings():
 
     return name_to_id, id_to_name
 
+@pytest.fixture
+def item_neighbours():
+
+    item_neighbours_df = pd.DataFrame(
+        {
+            "BGGId":[1, 1, 1],
+            "SimilarBGGId":[2, 3, 4],
+            "Score":[0.7, 0.9, 0.8]
+            }
+        )
+
+    return item_neighbours_df
+
+
+# ===========================================================================
 
 def test_recommender_single_game_excludes_selected_game(game_mappings):
     # Arrange
@@ -187,3 +202,53 @@ def test_because_you_liked_shows_selected_games(game_mappings):
     azul_row = recommendations[recommendations["Name"] == "Azul"].iloc[0]
 
     assert azul_row["BecauseYouLiked"] == "Catan, Ticket to Ride"
+
+
+def test_empty_dataframe_if_no_valid_games_found(game_mappings, item_neighbours):
+
+    # Arrange
+    invalid_game = ["Bananagrams"] # expects a list
+    name_to_id, id_to_name = game_mappings
+    item_neighbours_df = item_neighbours
+
+    # Act
+    recommendations = recommend_from_favourite_games(
+        invalid_game,
+        item_neighbours_df,
+        name_to_id,
+        id_to_name,
+        similarity_threshold=0.25,
+        top_n=20,
+        top_k_similar=50,
+        )
+
+    # Assert
+    assert recommendations.empty
+
+
+def test_empty_dataframe_if_no_recommendations(game_mappings):
+    # Arrange
+    favourite_game = ["Catan"]
+    name_to_id, id_to_name = game_mappings
+
+    no_result_item_neighbours_df = pd.DataFrame(
+        {
+            "BGGId":[1],
+            "SimilarBGGId":[1],
+            "Score":[1.0]
+            }
+    )
+
+    # Act
+    recommendations = recommend_from_favourite_games(
+        favourite_game,
+        no_result_item_neighbours_df,
+        name_to_id,
+        id_to_name,
+        similarity_threshold=0.25,
+        top_n=20,
+        top_k_similar=50,
+        )
+
+    # Assert
+    assert recommendations.empty
