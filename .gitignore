@@ -9,3 +9,5 @@ data/**
 !data/raw/
 !data/processed/
 !data/**/.gitkeep
+
+.coverage
