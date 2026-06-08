@@ -2,3 +2,4 @@ pandas
 streamlit
 pyarrow
 pytest
+pytest-cov
