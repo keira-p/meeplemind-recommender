@@ -1,6 +1,8 @@
 # 🧠 MeepleMind
 
-Understanding what makes a great board game - and helping you find your next favourite.
+Built an end-to-end recommendation system using 20,000+ board games and user rating data from BoardGameGeek. The project combines exploratory analysis, predictive modelling and item-based collaborative filtering, deployed as a cloud-hosted Streamlit application.
+
+⭐️ Understanding what makes a great board game - and helping you find your next favourite.
 
 *“Meeple” is a common term for player tokens in board games, short for “my people” - representing the human element at the centre of play.*
 
