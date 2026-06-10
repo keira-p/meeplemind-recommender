@@ -134,6 +134,8 @@ Google Cloud Run
 
 parquet
 
+pytest
+
 ## 💡 Why this project
 
 This project brings together:
